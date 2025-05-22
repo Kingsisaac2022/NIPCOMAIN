@@ -40,16 +40,16 @@ const Header: React.FC<HeaderProps> = ({ title, showBack = false, stationId }) =
   };
   
   return (
-    <header className="bg-card-bg border-b border-white/5 py-4 px-4 sm:px-6 sticky top-0 z-50">
+    <header className="bg-card-bg border-b border-white/5 py-2 px-4 sm:px-6 sticky top-0 z-50">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center">
           {showBack && (
             <button 
               onClick={handleBackClick}
-              className="mr-3 p-3 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors duration-300 -ml-2"
+              className="mr-3 p-2 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors duration-300 -ml-2"
               aria-label="Go back"
             >
-              <ChevronLeft size={28} className="text-primary" />
+              <ChevronLeft size={24} className="text-primary" />
             </button>
           )}
           <h1 className="text-xl sm:text-2xl font-bold text-text line-clamp-1">{title}</h1>
@@ -72,10 +72,10 @@ const Header: React.FC<HeaderProps> = ({ title, showBack = false, stationId }) =
               <div className="relative">
                 <button 
                   onClick={handleNotificationClick}
-                  className="p-3 hover:bg-background rounded-full transition-colors duration-300"
+                  className="p-2 hover:bg-background rounded-full transition-colors duration-300"
                   aria-label="Notifications"
                 >
-                  <Bell size={28} className="text-primary" />
+                  <Bell size={24} className="text-primary" />
                   {unreadCount > 0 && (
                     <span className="notification-badge">{unreadCount}</span>
                   )}
