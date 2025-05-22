@@ -51,7 +51,9 @@ const Dashboard: React.FC = () => {
             </div>
             <h1 className="text-4xl font-bold leading-tight">NIPCO Smart Station Manager</h1>
           </div>
-          <p className="welcome-message">Welcome back. Ready to manage your station?</p>
+          <div className="flex justify-center">
+            <p className="welcome-message">Welcome back</p>
+          </div>
         </div>
       </div>
       

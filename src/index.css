@@ -42,7 +42,7 @@
   }
 
   .welcome-message {
-    @apply inline-block text-xl text-text-secondary bg-white/5 px-6 py-3 rounded-xl backdrop-blur-sm;
+    @apply inline-block text-lg text-text-secondary bg-white/5 px-4 py-2 rounded-xl backdrop-blur-sm mx-auto;
   }
 
   .btn {
@@ -84,12 +84,10 @@
            flex items-center justify-center text-sm font-bold;
   }
 
-  /* Main content spacing */
   .main-content {
     @apply pt-24 pb-24;
   }
 
-  /* Station manager pages */
   .station-page {
     @apply min-h-screen bg-background;
   }
@@ -99,7 +97,6 @@
   }
 }
 
-/* Animation Classes */
 .fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
@@ -109,7 +106,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   @apply w-2;
 }
@@ -126,7 +122,6 @@
   @apply bg-primary;
 }
 
-/* Mobile-specific optimizations */
 @media (max-width: 640px) {
   .page-container {
     @apply px-4;
@@ -137,7 +132,7 @@
   }
 
   .welcome-message {
-    @apply text-lg px-4 py-2;
+    @apply text-base px-3 py-1.5;
   }
 
   .btn {
