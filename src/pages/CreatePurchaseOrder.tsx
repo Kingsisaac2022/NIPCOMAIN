@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, AlertCircle } from 'lucide-react';
+import { Save, AlertCircle, Loader } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
@@ -27,7 +27,10 @@ const CreatePurchaseOrder: React.FC = () => {
   
   const [stationId, setStationId] = useState('');
   const [productType, setProductType] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
   
   // Supplier details
   const [supplierName, setSupplierName] = useState('');
@@ -126,56 +129,71 @@ const CreatePurchaseOrder: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
+      setToastMessage('Please fill in all required fields correctly');
+      setToastType('error');
+      setShowToast(true);
       return;
     }
+
+    setIsSubmitting(true);
     
-    const selectedStation = stations.find(s => s.id.toString() === stationId);
-    
-    if (!selectedStation) {
-      setErrors({ stationId: 'Invalid station selected' });
-      return;
+    try {
+      const selectedStation = stations.find(s => s.id.toString() === stationId);
+      
+      if (!selectedStation) {
+        throw new Error('Invalid station selected');
+      }
+      
+      const now = new Date();
+      const dateCreated = now.toISOString().split('T')[0];
+      const timeCreated = now.toTimeString().split(' ')[0];
+      
+      await createPurchaseOrder({
+        stationId: selectedStation.id,
+        stationName: selectedStation.name,
+        productType: productType as 'PMS' | 'AGO',
+        supplierDetails: {
+          name: supplierName,
+          phone: supplierPhone,
+          address: supplierAddress,
+        },
+        driverDetails: {
+          name: driverName,
+          phone: driverPhone,
+          truckInfo,
+          gpsTrackerId,
+        },
+        productCostPerUnit: parseFloat(productCostPerUnit),
+        totalVolume: parseFloat(totalVolume),
+        totalCost: calculateTotalCost(),
+        transportCost: parseFloat(transportCost),
+        finalTotalCost: calculateFinalTotalCost(),
+        sellingPricePerUnit: parseFloat(sellingPricePerUnit),
+        expectedRevenue: calculateExpectedRevenue(),
+        dateCreated,
+        timeCreated,
+        status: 'Pending',
+      });
+      
+      setToastMessage('Purchase Order successfully created');
+      setToastType('success');
+      setShowToast(true);
+
+      // Delay navigation to show success message
+      setTimeout(() => {
+        navigate('/ceo');
+      }, 2000);
+    } catch (error) {
+      setToastMessage('Failed to create Purchase Order. Please try again.');
+      setToastType('error');
+      setShowToast(true);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    const now = new Date();
-    const dateCreated = now.toISOString().split('T')[0];
-    const timeCreated = now.toTimeString().split(' ')[0];
-    
-    createPurchaseOrder({
-      stationId: selectedStation.id,
-      stationName: selectedStation.name,
-      productType: productType as 'PMS' | 'AGO',
-      supplierDetails: {
-        name: supplierName,
-        phone: supplierPhone,
-        address: supplierAddress,
-      },
-      driverDetails: {
-        name: driverName,
-        phone: driverPhone,
-        truckInfo,
-        gpsTrackerId,
-      },
-      productCostPerUnit: parseFloat(productCostPerUnit),
-      totalVolume: parseFloat(totalVolume),
-      totalCost: calculateTotalCost(),
-      transportCost: parseFloat(transportCost),
-      finalTotalCost: calculateFinalTotalCost(),
-      sellingPricePerUnit: parseFloat(sellingPricePerUnit),
-      expectedRevenue: calculateExpectedRevenue(),
-      dateCreated,
-      timeCreated,
-      status: 'Pending',
-    });
-    
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-      navigate('/ceo');
-    }, 2000);
   };
   
   return (
@@ -184,29 +202,27 @@ const CreatePurchaseOrder: React.FC = () => {
       
       <main className="page-container fade-in py-12">
         <div className="card">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-bold mb-4">Station & Product</h3>
-              
-              <SelectField
-                label="NIPCO Station"
-                options={stationOptions}
-                value={stationId}
-                onChange={(e) => setStationId(e.target.value)}
-                required
-                error={errors.stationId}
-              />
-              
-              <SelectField
-                label="Product Type"
-                options={productTypeOptions}
-                value={productType}
-                onChange={(e) => setProductType(e.target.value)}
-                required
-                error={errors.productType}
-              />
-              
-              <h3 className="text-lg font-bold my-4">Supplier Details</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <SelectField
+              label="NIPCO Station"
+              options={stationOptions}
+              value={stationId}
+              onChange={(e) => setStationId(e.target.value)}
+              required
+              error={errors.stationId}
+            />
+            
+            <SelectField
+              label="Product Type"
+              options={productTypeOptions}
+              value={productType}
+              onChange={(e) => setProductType(e.target.value)}
+              required
+              error={errors.productType}
+            />
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold">Supplier Details</h3>
               
               <InputField
                 label="Supplier Name"
@@ -234,8 +250,10 @@ const CreatePurchaseOrder: React.FC = () => {
                 required
                 error={errors.supplierAddress}
               />
-              
-              <h3 className="text-lg font-bold my-4">Driver Details</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold">Driver Details</h3>
               
               <InputField
                 label="Driver Name"
@@ -254,9 +272,7 @@ const CreatePurchaseOrder: React.FC = () => {
                 required
                 error={errors.driverPhone}
               />
-            </div>
-            
-            <div>
+              
               <InputField
                 label="Truck Information"
                 value={truckInfo}
@@ -274,8 +290,10 @@ const CreatePurchaseOrder: React.FC = () => {
                 required
                 error={errors.gpsTrackerId}
               />
-              
-              <h3 className="text-lg font-bold my-4">Product Cost & Revenue</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold">Product Cost & Revenue</h3>
               
               <InputField
                 label="Product Cost Per Unit (₦)"
@@ -338,26 +356,26 @@ const CreatePurchaseOrder: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
-          
-          <div className="flex justify-end mt-6 pt-6 border-t border-gray-700">
-            <Button 
-              type="submit" 
-              variant="primary"
-              size="lg"
-              icon={<Save size={20} />}
-              onClick={handleSubmit}
-            >
-              Create Purchase Order
-            </Button>
-          </div>
+            
+            <div className="flex justify-end pt-6 border-t border-gray-700">
+              <Button 
+                type="submit" 
+                variant="primary"
+                size="lg"
+                icon={isSubmitting ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Creating...' : 'Create Purchase Order'}
+              </Button>
+            </div>
+          </form>
         </div>
       </main>
 
       {showToast && (
         <Toast
-          message="Purchase Order successfully saved"
-          type="success"
+          message={toastMessage}
+          type={toastType}
           onClose={() => setShowToast(false)}
         />
       )}
