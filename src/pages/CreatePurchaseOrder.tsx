@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save } from 'lucide-react';
+import { Save, AlertCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import Header from '../components/Header';
 import InputField from '../components/InputField';
 import SelectField from '../components/SelectField';
 import Button from '../components/Button';
+import Toast from '../components/Toast';
 import BottomNav from '../components/BottomNav';
 
 const CreatePurchaseOrder: React.FC = () => {
@@ -26,6 +27,7 @@ const CreatePurchaseOrder: React.FC = () => {
   
   const [stationId, setStationId] = useState('');
   const [productType, setProductType] = useState('');
+  const [showToast, setShowToast] = useState(false);
   
   // Supplier details
   const [supplierName, setSupplierName] = useState('');
@@ -169,7 +171,11 @@ const CreatePurchaseOrder: React.FC = () => {
       status: 'Pending',
     });
     
-    navigate('/ceo');
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+      navigate('/ceo');
+    }, 2000);
   };
   
   return (
@@ -347,6 +353,14 @@ const CreatePurchaseOrder: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {showToast && (
+        <Toast
+          message="Purchase Order successfully saved"
+          type="success"
+          onClose={() => setShowToast(false)}
+        />
+      )}
 
       <BottomNav />
     </div>

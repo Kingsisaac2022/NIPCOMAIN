@@ -254,7 +254,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setPurchaseOrders(prev => [...prev, orderWithId]);
     
-    const newNotification: Notification = {
+    // Create notification for the station
+    const stationNotification: Notification = {
       id: Date.now(),
       stationId: newOrder.stationId,
       title: "New Purchase Order Created",
@@ -264,7 +265,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       type: "Order"
     };
     
-    setNotifications(prev => [...prev, newNotification]);
+    // Create notification for CEO
+    const ceoNotification: Notification = {
+      id: Date.now() + 1,
+      stationId: 1, // CEO's station ID
+      title: "New Purchase Order Pending",
+      message: `${newOrder.stationName} has created a new ${newOrder.productType} purchase order.`,
+      dateTime: new Date().toISOString(),
+      read: false,
+      type: "Order"
+    };
+    
+    setNotifications(prev => [...prev, stationNotification, ceoNotification]);
     playNotificationSound();
   };
 
@@ -274,6 +286,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         order.id === updatedOrder.id ? updatedOrder : order
       )
     );
+
+    // Create notification for the station about status change
+    if (updatedOrder.status !== 'Pending') {
+      const notification: Notification = {
+        id: Date.now(),
+        stationId: updatedOrder.stationId,
+        title: "Purchase Order Status Updated",
+        message: `Your purchase order for ${updatedOrder.productType} has been ${updatedOrder.status.toLowerCase()}.`,
+        dateTime: new Date().toISOString(),
+        read: false,
+        type: "Order"
+      };
+      
+      setNotifications(prev => [...prev, notification]);
+      playNotificationSound();
+    }
   };
 
   const createDriverOffload = (newOffload: Omit<DriverOffload, 'id'>) => {
