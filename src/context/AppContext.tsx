@@ -10,7 +10,7 @@ interface AppContextType {
   driverOffloads: DriverOffload[];
   tankOffloads: TankOffload[];
   updateStation: (station: Station) => void;
-  createPurchaseOrder: (order: Omit<PurchaseOrder, 'id'>) => void;
+  createPurchaseOrder: (order: Omit<PurchaseOrder, 'id'>) => Promise<void>;
   updatePurchaseOrder: (order: PurchaseOrder) => void;
   createDriverOffload: (offload: Omit<DriverOffload, 'id'>) => void;
   getStationNotifications: (stationId: number) => Notification[];
@@ -246,7 +246,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  const createPurchaseOrder = (newOrder: Omit<PurchaseOrder, 'id'>) => {
+  const createPurchaseOrder = async (newOrder: Omit<PurchaseOrder, 'id'>): Promise<void> => {
     const orderWithId = {
       ...newOrder,
       id: Date.now(),
